@@ -7,7 +7,7 @@
 
 u8 region;
 
-#define THUMB_CALL_ADDR(pos) (pos | 1)
+#define THUMB_CALL_ADDR(pos) ((pos) | 1)
 
 namespace Megamix {
 #pragma GCC diagnostic push
