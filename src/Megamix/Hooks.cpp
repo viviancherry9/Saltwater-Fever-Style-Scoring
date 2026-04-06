@@ -27,6 +27,9 @@ namespace Megamix::Hooks {
 
     RT_HOOK tickflowCommandsHook;
 
+    RT_HOOK scoringFunctionHook;
+
+
     void* getTickflowOffset(int index) {
         if (config->tickflows.contains(index)) {
             int result = Megamix::btks.LoadFile(config->tickflows[index]);
@@ -138,6 +141,85 @@ namespace Megamix::Hooks {
             return RegionMegamix::UNK;
     }
 
+    int decideFinalScore(Megamix::CResultManager *arg1){
+        //pointers
+        u8 amtCategories = arg1->mAmtCategories;
+        OSD::Notify("amtCategories = " + std::to_string(amtCategories));
+        u32* field6 = arg1->field6_0xc;
+        u32* field7 = arg1->field7_0x10;
+        u32* field8 = arg1->field8_0x14;
+        long long catScore10000 = 0LL;
+        float catScore10000float = 0.0f;
+        float totalWeight = 0.0f;
+        float scoreDivWeight = 0.0f;
+        int maxCatScore = 0;
+        float result = 0.0f;
+        int finalResult = 0;
+        float curScoreWeight = 0.0f;
+        int i = 0;
+        int g = 0;
+        int validCategories = 0;
+        float distributedWeight = 0.0f;
+
+        if (0 != amtCategories){
+            //OSD::Notify("amt categories loop entered!");
+            do{
+                maxCatScore = (int)(field6[g] + field7[g] + field8[g]);
+                if(maxCatScore != 0){
+                    validCategories += 1;
+                }
+                g += 1;
+            }while (g < 7);
+            distributedWeight = (float)(arg1->mScoreWeight[7]) / (float)(validCategories);
+            do{
+                maxCatScore = (int)(field6[i] + field7[i] + field8[i]);
+                //OSD::Notify("cat score = " + std::to_string(maxCatScore));
+
+                  if (0 < maxCatScore) {
+                    if((int)(field6[i] + field7[i] + field8[i]) < 1){
+                        maxCatScore = 0;
+                    }
+                    else{
+                        if(arg1->points[i] < 1){
+                            catScore10000 = ((arg1->points[i]+1) * 10000) / (maxCatScore * arg1->mMaxWeight[i]);
+                            //OSD::Notify("points = " + std::to_string(arg1->points[i]));
+                        } else {
+                            catScore10000 = (arg1->points[i] * 10000) / (maxCatScore * arg1->mMaxWeight[i]);
+                            //OSD::Notify("catScore10000 = " + std::to_string(catScore10000));
+                        }
+                        //OSD::Notify("points = " + std::to_string(arg1->points[i]));
+
+                        //OSD::Notify("mMaxWeight = " + std::to_string(arg1->mMaxWeight[i]));
+                        catScore10000float = (float)catScore10000;
+                        //OSD::Notify("catScore10000float = " + std::to_string(catScore10000float));
+                    }
+                    if(i != 7){
+                        curScoreWeight = (float)(arg1->mScoreWeight[i]) + distributedWeight;
+                        OSD::Notify("curScoreWeight = " + std::to_string(curScoreWeight));
+                        totalWeight += curScoreWeight;
+                        OSD::Notify("totalWeight = " + std::to_string(totalWeight));
+                        scoreDivWeight += curScoreWeight/catScore10000float;
+                        //OSD::Notify("scoreDivWeight= " + std::to_string(scoreDivWeight));
+                    }
+                 }
+                i += 1;
+            } while (i < amtCategories);
+            if (0.0f < totalWeight){
+                result = totalWeight/scoreDivWeight;
+                //OSD::Notify("result = " + std::to_string(result));
+                finalResult = (int)(result - (arg1->field9_0x18 * arg1->field14_0x2c));
+                if(10000 < finalResult){
+                    finalResult = 10000;
+                }
+                //OSD::Notify("finalResult = " + std::to_string(finalResult));
+                if (0 < finalResult){
+                    return finalResult;
+                }
+            }
+        }
+        //OSD::Notify("finalResult = " + std::to_string(finalResult));
+        return 0;
+    }
 
     void TickflowHooks() {
         rtInitHook(&tickflowHook, GHooks::tickflow(), (u32)getTickflowOffset);
@@ -171,6 +253,11 @@ namespace Megamix::Hooks {
         rtEnableHook(&tickflowCommandsHook);
     }
 
+    void ScoringHook(){
+        rtInitHook(&scoringFunctionHook, GHooks::scoring(), (int)decideFinalScore);
+        rtEnableHook(&scoringFunctionHook);
+    }
+
     void DisableAllHooks() {
         rtDisableHook(&tickflowHook);
         rtDisableHook(&gateHook);
@@ -179,8 +266,11 @@ namespace Megamix::Hooks {
         rtDisableHook(&tempoAllHook);
         rtDisableHook(&regionFSHook);
         rtDisableHook(&regionOtherHook);
+        rtDisableHook(&scoringFunctionHook);
         rtDisableHook(&tickflowCommandsHook);
     }
+
+
 
     template<typename T>
     T StubbedFunction() {

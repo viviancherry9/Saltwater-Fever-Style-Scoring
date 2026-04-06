@@ -103,6 +103,7 @@ void ctrpf::PatchProcess(ctrpf::FwkSettings&) {
 
     // Start hooks, apply patches
     Megamix::Hooks::TickflowHooks();
+    Megamix::Hooks::ScoringHook();
     Megamix::Hooks::RegionHooks();
     Megamix::Patches::PatchRetryRemix();
     if (!Megamix::isJP()) {
