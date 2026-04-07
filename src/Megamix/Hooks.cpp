@@ -144,7 +144,7 @@ namespace Megamix::Hooks {
     int decideFinalScore(Megamix::CResultManager *arg1){
         //pointers
         u8 amtCategories = arg1->mAmtCategories;
-        OSD::Notify("amtCategories = " + std::to_string(amtCategories));
+        //OSD::Notify("amtCategories = " + std::to_string(amtCategories));
         u32* field6 = arg1->field6_0xc;
         u32* field7 = arg1->field7_0x10;
         u32* field8 = arg1->field8_0x14;
@@ -152,7 +152,7 @@ namespace Megamix::Hooks {
         float catScore10000float = 0.0f;
         float totalWeight = 0.0f;
         float scoreDivWeight = 0.0f;
-        int maxCatScore = 0;
+        float amtInputs = 0.0f;
         float result = 0.0f;
         int finalResult = 0;
         float curScoreWeight = 0.0f;
@@ -160,48 +160,63 @@ namespace Megamix::Hooks {
         int g = 0;
         int validCategories = 0;
         float distributedWeight = 0.0f;
+        float distributedAmtInputs = 0.0f;
+        float distributedScore = 0.0f;
 
         if (0 != amtCategories){
             //OSD::Notify("amt categories loop entered!");
             do{
-                maxCatScore = (int)(field6[g] + field7[g] + field8[g]);
-                if(maxCatScore != 0){
+                amtInputs = (int)(field6[g] + field7[g] + field8[g]);
+                if(amtInputs != 0){
                     validCategories += 1;
                 }
                 g += 1;
             }while (g < 7);
+
             distributedWeight = (float)(arg1->mScoreWeight[7]) / (float)(validCategories);
+            distributedAmtInputs = (float)(field6[7] + field7[7] + field8[7]) / (float)(validCategories);
+            if(arg1->points[7] < 1){
+                distributedScore = (float)(arg1->points[7] + 1) / (float)(validCategories);
+            } else {
+                distributedScore = (float)(arg1->points[7]) / (float)(validCategories);
+            }
+
+            //OSD::Notify("distributedWeight = " + std::to_string(distributedWeight));
+            //OSD::Notify("distributedAmtInputs = " + std::to_string(distributedAmtInputs));
+            //OSD::Notify("distributedScore = " + std::to_string(distributedScore));
+
             do{
-                maxCatScore = (int)(field6[i] + field7[i] + field8[i]);
-                //OSD::Notify("cat score = " + std::to_string(maxCatScore));
+                if(i != 7){
+                    amtInputs = (float)(field6[i] + field7[i] + field8[i]);
 
-                  if (0 < maxCatScore) {
-                    if((int)(field6[i] + field7[i] + field8[i]) < 1){
-                        maxCatScore = 0;
-                    }
-                    else{
-                        if(arg1->points[i] < 1){
-                            catScore10000 = ((arg1->points[i]+1) * 10000) / (maxCatScore * arg1->mMaxWeight[i]);
-                            //OSD::Notify("points = " + std::to_string(arg1->points[i]));
-                        } else {
-                            catScore10000 = (arg1->points[i] * 10000) / (maxCatScore * arg1->mMaxWeight[i]);
-                            //OSD::Notify("catScore10000 = " + std::to_string(catScore10000));
+                    if (0 < amtInputs) {
+                        if((float)(field6[i] + field7[i] + field8[i]) < 1){
+                            amtInputs = 0;
                         }
-                        //OSD::Notify("points = " + std::to_string(arg1->points[i]));
+                        else{
+                            amtInputs += distributedAmtInputs;
+                            //OSD::Notify("cat score = " + std::to_string(amtInputs));
+                            if(arg1->points[i] < 1){
+                                catScore10000 = ((arg1->points[i] + distributedScore + 1) * 10000) / (amtInputs * arg1->mMaxWeight[i]);
+                                //OSD::Notify("points = " + std::to_string(arg1->points[i]));
+                            } else {
+                                catScore10000 = ((arg1->points[i] + distributedScore) * 10000) / (amtInputs * arg1->mMaxWeight[i]);
+                                //OSD::Notify("catScore10000 = " + std::to_string(catScore10000));
+                            }
+                            //OSD::Notify("points = " + std::to_string(arg1->points[i]));
 
-                        //OSD::Notify("mMaxWeight = " + std::to_string(arg1->mMaxWeight[i]));
-                        catScore10000float = (float)catScore10000;
-                        //OSD::Notify("catScore10000float = " + std::to_string(catScore10000float));
-                    }
-                    if(i != 7){
+                            //OSD::Notify("mMaxWeight = " + std::to_string(arg1->mMaxWeight[i]));
+                            catScore10000float = (float)catScore10000;
+                            //OSD::Notify("catScore10000float = " + std::to_string(catScore10000float));
+                        }
                         curScoreWeight = (float)(arg1->mScoreWeight[i]) + distributedWeight;
-                        OSD::Notify("curScoreWeight = " + std::to_string(curScoreWeight));
+                        //OSD::Notify("curScoreWeight = " + std::to_string(curScoreWeight));
                         totalWeight += curScoreWeight;
-                        OSD::Notify("totalWeight = " + std::to_string(totalWeight));
+                        //OSD::Notify("totalWeight = " + std::to_string(totalWeight));
                         scoreDivWeight += curScoreWeight/catScore10000float;
                         //OSD::Notify("scoreDivWeight= " + std::to_string(scoreDivWeight));
                     }
-                 }
+                }
                 i += 1;
             } while (i < amtCategories);
             if (0.0f < totalWeight){
