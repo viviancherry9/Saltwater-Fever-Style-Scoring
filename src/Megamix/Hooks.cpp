@@ -142,14 +142,13 @@ namespace Megamix::Hooks {
     }
 
     int decideFinalScore(Megamix::CResultManager *arg1){
-        //pointers
         u8 amtCategories = arg1->mAmtCategories;
         //OSD::Notify("amtCategories = " + std::to_string(amtCategories));
         u32* field6 = arg1->field6_0xc;
         u32* field7 = arg1->field7_0x10;
         u32* field8 = arg1->field8_0x14;
-        long long catScore10000 = 0LL;
-        float catScore10000float = 0.0f;
+        //long long catScore10000 = 0LL;
+        float catScore10000 = 0.0f;
         float totalWeight = 0.0f;
         float scoreDivWeight = 0.0f;
         float amtInputs = 0.0f;
@@ -206,14 +205,14 @@ namespace Megamix::Hooks {
                             //OSD::Notify("points = " + std::to_string(arg1->points[i]));
 
                             //OSD::Notify("mMaxWeight = " + std::to_string(arg1->mMaxWeight[i]));
-                            catScore10000float = (float)catScore10000;
+                            //catScore10000float = (float)catScore10000;
                             //OSD::Notify("catScore10000float = " + std::to_string(catScore10000float));
                         }
                         curScoreWeight = (float)(arg1->mScoreWeight[i]) + distributedWeight;
                         //OSD::Notify("curScoreWeight = " + std::to_string(curScoreWeight));
                         totalWeight += curScoreWeight;
                         //OSD::Notify("totalWeight = " + std::to_string(totalWeight));
-                        scoreDivWeight += curScoreWeight/catScore10000float;
+                        scoreDivWeight += curScoreWeight/catScore10000;
                         //OSD::Notify("scoreDivWeight= " + std::to_string(scoreDivWeight));
                     }
                 }
