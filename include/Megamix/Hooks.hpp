@@ -15,4 +15,6 @@ namespace Megamix::Hooks {
     template<typename T> void StubFunction(u32 address);
 }
 
+extern std::vector<float> debugScoreArray;
+
 #endif

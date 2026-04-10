@@ -136,6 +136,16 @@ void InitMenu(ctrpf::PluginMenu &menu) {
         ))();
     });
 
+    menu += new ctrpf::MenuEntry("Category Scores", nullptr, [](ctrpf::MenuEntry*) {
+        std::string debugScoreOutput = "";
+
+        for(float i : debugScoreArray) {
+            debugScoreOutput += std::to_string(i) + "\n";
+        }
+
+        ctrpf::MessageBox("Category Scores", debugScoreOutput)();
+    });
+
     menu += new ctrpf::MenuEntry("Tickflow contents", nullptr, [](ctrpf::MenuEntry*) {
         ctrpf::MessageBox("Map shit", Stuff::FileMapToString(config->tickflows))();
     });

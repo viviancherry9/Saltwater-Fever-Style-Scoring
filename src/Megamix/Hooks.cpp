@@ -6,6 +6,8 @@
 #include "Megamix.hpp"
 #include "Config.hpp"
 
+std::vector<float> debugScoreArray;
+
 using CTRPluginFramework::OSD;
 
 using Megamix::TempoTable;
@@ -162,6 +164,8 @@ namespace Megamix::Hooks {
         float distributedAmtInputs = 0.0f;
         float distributedScore = 0.0f;
 
+        debugScoreArray.clear();
+
         if (0 != amtCategories){
             //OSD::Notify("amt categories loop entered!");
             do{
@@ -171,6 +175,7 @@ namespace Megamix::Hooks {
                 }
                 g += 1;
             }while (g < 7);
+            //OSD::Notify("validCategories = " + std::to_string(validCategories));
 
             distributedWeight = (float)(arg1->mScoreWeight[7]) / (float)(validCategories);
             distributedAmtInputs = (float)(field6[7] + field7[7] + field8[7]) / (float)(validCategories);
@@ -208,6 +213,11 @@ namespace Megamix::Hooks {
                             //catScore10000float = (float)catScore10000;
                             //OSD::Notify("catScore10000float = " + std::to_string(catScore10000float));
                         }
+                        // do{
+                        debugScoreArray.push_back(catScore10000);
+                        // } while ((int)(debugScoreArray.size()) <= (int)(validCategories));
+
+
                         curScoreWeight = (float)(arg1->mScoreWeight[i]) + distributedWeight;
                         //OSD::Notify("curScoreWeight = " + std::to_string(curScoreWeight));
                         totalWeight += curScoreWeight;
