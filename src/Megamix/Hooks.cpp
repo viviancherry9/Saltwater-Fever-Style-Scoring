@@ -6,11 +6,11 @@
 #include "Megamix.hpp"
 #include "Config.hpp"
 
-std::vector<float> debugScoreArray;
-
 using CTRPluginFramework::OSD;
 
 using Megamix::TempoTable;
+
+std::vector<float> debugScoreArray;
 
 // c++ is stupid
 namespace GHooks = Megamix::Game::Hooks;
@@ -204,7 +204,7 @@ namespace Megamix::Hooks {
 
             if (totalWeight > 0.0f) {
                 result = totalWeight/scoreDivWeight;
-                finalResult = (int)(result - (arg1->field9_0x18 * arg1->field14_0x2c));
+                finalResult = (int)(result - (arg1->mAmtPenalties * arg1->mPenalty));
                 if (finalResult > 10000) {
                     finalResult = 10000;
                 }

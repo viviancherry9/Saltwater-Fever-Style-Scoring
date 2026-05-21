@@ -570,12 +570,12 @@ namespace Megamix {
         u32* mAmtHit;
         u32* mAmtBarely;
         u32* mAmtMiss;
-        s32 field9_0x18;
+        s32 mAmtPenalties;
         s32 field10_0x1c;
         u32* mMaxWeight;
         u32* field12_0x24;
         u32* mScoreWeight;
-        u32 field14_0x2c;
+        u32 mPenalty;
         u32* field15_0x30;
         u32* field16_0x34;
         u32 mOkThreshold;
