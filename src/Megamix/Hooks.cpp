@@ -31,7 +31,6 @@ namespace Megamix::Hooks {
 
     RT_HOOK scoringFunctionHook;
 
-
     void* getTickflowOffset(int index) {
         if (config->tickflows.contains(index)) {
             int result = Megamix::btks.LoadFile(config->tickflows[index]);
@@ -145,11 +144,9 @@ namespace Megamix::Hooks {
 
     int decideFinalScore(Megamix::CResultManager *arg1){
         u8 amtCategories = arg1->mAmtCategories;
-        //OSD::Notify("amtCategories = " + std::to_string(amtCategories));
-        u32* field6 = arg1->field6_0xc;
-        u32* field7 = arg1->field7_0x10;
-        u32* field8 = arg1->field8_0x14;
-        //long long catScore10000 = 0LL;
+        u32* amtHit = arg1->mAmtHit;
+        u32* amtBarely = arg1->mAmtBarely;
+        u32* amtMiss = arg1->mAmtMiss;
         float catScore10000 = 0.0f;
         float totalWeight = 0.0f;
         float scoreDivWeight = 0.0f;
@@ -166,82 +163,60 @@ namespace Megamix::Hooks {
 
         debugScoreArray.clear();
 
-        if (0 != amtCategories){
-            //OSD::Notify("amt categories loop entered!");
+        if (amtCategories != 0){
             do{
-                amtInputs = (int)(field6[g] + field7[g] + field8[g]);
+                amtInputs = (int)(amtHit[g] + amtBarely[g] + amtMiss[g]);
                 if(amtInputs != 0){
                     validCategories += 1;
                 }
                 g += 1;
             }while (g < 7);
-            //OSD::Notify("validCategories = " + std::to_string(validCategories));
 
             distributedWeight = (float)(arg1->mScoreWeight[7]) / (float)(validCategories);
-            distributedAmtInputs = (float)(field6[7] + field7[7] + field8[7]) / (float)(validCategories);
+            distributedAmtInputs = (float)(amtHit[7] + amtBarely[7] + amtMiss[7]) / (float)(validCategories);
             if(arg1->points[7] < 1){
                 distributedScore = (float)(arg1->points[7] + 1) / (float)(validCategories);
             } else {
                 distributedScore = (float)(arg1->points[7]) / (float)(validCategories);
             }
 
-            //OSD::Notify("distributedWeight = " + std::to_string(distributedWeight));
-            //OSD::Notify("distributedAmtInputs = " + std::to_string(distributedAmtInputs));
-            //OSD::Notify("distributedScore = " + std::to_string(distributedScore));
-
             do{
                 if(i != 7){
-                    amtInputs = (float)(field6[i] + field7[i] + field8[i]);
-
-                    if (0 < amtInputs) {
-                        if((float)(field6[i] + field7[i] + field8[i]) < 1){
+                    amtInputs = (float)(amtHit[i] + amtBarely[i] + amtMiss[i]);
+                    if (amtInputs > 0) {
+                        if((float)(amtHit[i] + amtBarely[i] + amtMiss[i]) < 1){
                             amtInputs = 0;
                         }
                         else{
                             amtInputs += distributedAmtInputs;
-                            //OSD::Notify("cat score = " + std::to_string(amtInputs));
                             if(arg1->points[i] < 1){
                                 catScore10000 = ((arg1->points[i] + distributedScore + 1) * 10000) / (amtInputs * arg1->mMaxWeight[i]);
-                                //OSD::Notify("points = " + std::to_string(arg1->points[i]));
                             } else {
                                 catScore10000 = ((arg1->points[i] + distributedScore) * 10000) / (amtInputs * arg1->mMaxWeight[i]);
-                                //OSD::Notify("catScore10000 = " + std::to_string(catScore10000));
                             }
-                            //OSD::Notify("points = " + std::to_string(arg1->points[i]));
-
-                            //OSD::Notify("mMaxWeight = " + std::to_string(arg1->mMaxWeight[i]));
-                            //catScore10000float = (float)catScore10000;
-                            //OSD::Notify("catScore10000float = " + std::to_string(catScore10000float));
                         }
-                        // do{
-                        debugScoreArray.push_back(catScore10000);
-                        // } while ((int)(debugScoreArray.size()) <= (int)(validCategories));
 
+                        debugScoreArray.push_back(catScore10000);
 
                         curScoreWeight = (float)(arg1->mScoreWeight[i]) + distributedWeight;
-                        //OSD::Notify("curScoreWeight = " + std::to_string(curScoreWeight));
                         totalWeight += curScoreWeight;
-                        //OSD::Notify("totalWeight = " + std::to_string(totalWeight));
                         scoreDivWeight += curScoreWeight/catScore10000;
-                        //OSD::Notify("scoreDivWeight= " + std::to_string(scoreDivWeight));
                     }
                 }
                 i += 1;
-            } while (i < amtCategories);
-            if (0.0f < totalWeight){
+            } while (amtCategories > i);
+
+            if (totalWeight > 0.0f){
                 result = totalWeight/scoreDivWeight;
-                //OSD::Notify("result = " + std::to_string(result));
                 finalResult = (int)(result - (arg1->field9_0x18 * arg1->field14_0x2c));
-                if(10000 < finalResult){
+                if(finalResult > 10000){
                     finalResult = 10000;
                 }
-                //OSD::Notify("finalResult = " + std::to_string(finalResult));
-                if (0 < finalResult){
+                if (finalResult > 0){
                     return finalResult;
                 }
             }
         }
-        //OSD::Notify("finalResult = " + std::to_string(finalResult));
         return 0;
     }
 

@@ -567,9 +567,9 @@ namespace Megamix {
         u8 mCommentTargetLowPrio;
         u8 field_0x7;
         s32 mCommentTargetHighPrio;
-        u32* field6_0xc;
-        u32* field7_0x10;
-        u32* field8_0x14;
+        u32* mAmtHit;
+        u32* mAmtBarely;
+        u32* mAmtMiss;
         s32 field9_0x18;
         s32 field10_0x1c;
         u32* mMaxWeight;
