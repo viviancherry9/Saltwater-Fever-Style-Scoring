@@ -142,7 +142,7 @@ namespace Megamix::Hooks {
             return RegionMegamix::UNK;
     }
 
-    int decideFinalScore(Megamix::CResultManager *arg1){
+    int decideFinalScore(Megamix::CResultManager *arg1) {
         u8 amtCategories = arg1->mAmtCategories;
         u32* amtHit = arg1->mAmtHit;
         u32* amtBarely = arg1->mAmtBarely;
@@ -154,8 +154,6 @@ namespace Megamix::Hooks {
         float result = 0.0f;
         int finalResult = 0;
         float curScoreWeight = 0.0f;
-        int i = 0;
-        int g = 0;
         int validCategories = 0;
         float distributedWeight = 0.0f;
         float distributedAmtInputs = 0.0f;
@@ -163,33 +161,32 @@ namespace Megamix::Hooks {
 
         debugScoreArray.clear();
 
-        if (amtCategories != 0){
-            do{
+        if (amtCategories != 0) {
+            for (int g = 0; g < 7; g++) {
                 amtInputs = (int)(amtHit[g] + amtBarely[g] + amtMiss[g]);
                 if(amtInputs != 0){
                     validCategories += 1;
                 }
-                g += 1;
-            }while (g < 7);
+            }
 
             distributedWeight = (float)(arg1->mScoreWeight[7]) / (float)(validCategories);
             distributedAmtInputs = (float)(amtHit[7] + amtBarely[7] + amtMiss[7]) / (float)(validCategories);
-            if(arg1->points[7] < 1){
+            if (arg1->points[7] < 1) {
                 distributedScore = (float)(arg1->points[7] + 1) / (float)(validCategories);
             } else {
                 distributedScore = (float)(arg1->points[7]) / (float)(validCategories);
             }
 
-            do{
-                if(i != 7){
+            for (int i = 0; amtCategories > i; i++) {
+                if (i != 7) {
                     amtInputs = (float)(amtHit[i] + amtBarely[i] + amtMiss[i]);
                     if (amtInputs > 0) {
-                        if((float)(amtHit[i] + amtBarely[i] + amtMiss[i]) < 1){
+                        if ((float)(amtHit[i] + amtBarely[i] + amtMiss[i]) < 1) {
                             amtInputs = 0;
                         }
-                        else{
+                        else {
                             amtInputs += distributedAmtInputs;
-                            if(arg1->points[i] < 1){
+                            if (arg1->points[i] < 1) {
                                 catScore10000 = ((arg1->points[i] + distributedScore + 1) * 10000) / (amtInputs * arg1->mMaxWeight[i]);
                             } else {
                                 catScore10000 = ((arg1->points[i] + distributedScore) * 10000) / (amtInputs * arg1->mMaxWeight[i]);
@@ -203,16 +200,15 @@ namespace Megamix::Hooks {
                         scoreDivWeight += curScoreWeight/catScore10000;
                     }
                 }
-                i += 1;
-            } while (amtCategories > i);
+            }
 
-            if (totalWeight > 0.0f){
+            if (totalWeight > 0.0f) {
                 result = totalWeight/scoreDivWeight;
                 finalResult = (int)(result - (arg1->field9_0x18 * arg1->field14_0x2c));
-                if(finalResult > 10000){
+                if (finalResult > 10000) {
                     finalResult = 10000;
                 }
-                if (finalResult > 0){
+                if (finalResult > 0) {
                     return finalResult;
                 }
             }
